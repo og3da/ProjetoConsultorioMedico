@@ -1,6 +1,8 @@
 #conectando ao MySql 
 import mysql.connector 
-from conector import Banco 
+import os #modulo para limpar tela
+from conector import Banco #importando arquivo externo para pegar informações do banco
+import getpass #modulo para esconder a senha no prompt (a senha nao aparecerá)
 conexao = mysql.connector.connect(host=Banco.dados['host'],database=Banco.dados['database'],user=Banco.dados['user'],password=Banco.dados['password'])
 if conexao.is_connected(): #verificando se conexao foi realizada, se sim:
         db_info = conexao.get_server_info() #busca versao do server
@@ -15,6 +17,9 @@ def pararConexao():
     conexao.close()
     print("Conexão encerrada com sucesso!") 
 
+#limpar tela
+def limparTela():
+    os.system('cls')
 
 #   FUNÇÕES 
 # TELA DE BOAS VINDAS
@@ -88,12 +93,13 @@ def cadastrar():
         print('escolha uma opção válida!')
         cadastrar()
 
-# continuar cadastrando ou sair --adicionar função para limpar tela quando entrar no login()
+# continuar cadastrando ou sair
 def continuarOUsair():
     arm2=int(input("Digite 1 para continuar cadastrando ou 2 para sair: "))
     if arm2== 1:
         cadastrar()
     elif arm2== 2:
+        limparTela()
         login()
     else:
         print('Escolha a opção 1 ou 2!!!')
@@ -165,7 +171,7 @@ def programaGestor():
 # Login de cada usuário
 def loginPaciente():
     x = input('Usuário: ')
-    y = input('Senha: ')
+    y = getpass.getpass('Senha: ')
     mycursor.execute("select nm_Usuario, ds_Senha FROM tbl_Paciente WHERE nm_Usuario = '%s' and ds_Senha = '%s'" % (x,y)) #validando login
     verificacao = mycursor.fetchall()
 
@@ -178,7 +184,7 @@ def loginPaciente():
 
 def loginMedico():
     x = input('Usuário: ')
-    y = input('Senha: ')
+    y = getpass.getpass('Senha: ')
     mycursor.execute("select nm_Usuario, ds_Senha FROM tbl_Medico WHERE nm_Usuario = '%s' and ds_Senha = '%s'" % (x,y))
     verificacao = mycursor.fetchall()
 
@@ -191,7 +197,7 @@ def loginMedico():
 
 def loginGestor():
     x = input('Usuário: ')
-    y = input('Senha: ')
+    y = getpass.getpass('Senha: ')
     mycursor.execute("select nm_Usuario, ds_Senha FROM tbl_Gestor WHERE nm_Usuario = '%s' and ds_Senha = '%s'" % (x,y))
     verificacao = mycursor.fetchall()
 
@@ -204,7 +210,7 @@ def loginGestor():
 
 def loginAdm():
     x = input('Usuário: ')
-    y = input('Senha: ')
+    y = getpass.getpass('Senha: ')
     mycursor.execute("select nm_Usuario, ds_Senha FROM tbl_Administrador WHERE nm_Usuario = '%s' and ds_Senha = '%s'" % (x,y))
     verificacao = mycursor.fetchall()
 
