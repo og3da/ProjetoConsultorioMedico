@@ -129,12 +129,14 @@ def programaMedico():
     #exibir codigo de usuario para o medico
 
 def programaPaciente():
+    print("--- AGENDA DE MÉDICOS DISPONÍVEIS ---")
     mycursor.execute("select * from vw_mostrarAgendaMedico") #exibindo a agenda dos medicos
     myresult = mycursor.fetchall()
 
     for x in myresult:
         print(x)
 
+    print("")
     medico = str(input("digite o nome do medico que deseja marcar consulta: "))
     especialidade = str(input("digite a especialidade do medico: "))
     data = str(input("digite a data desejada para consulta: "))
@@ -163,6 +165,9 @@ def programaGestor():
     #gestor deverá escolher o código da consulta a se mudar o status para ATIVO
     alterarStatus = int(input("Digite 1 para Confirmar a consulta ou 2 para manter Inativa: "))
     if alterarStatus == 1:
+        #solicitar codigo do gestor
+        # sql=("INSERT INTO tbl_Consulta(cd_Gestor) SELECT cd_Gestor FROM tbl_Gestor WHERE cd_Gestor='%s' ") 
+        # acima devo inserir na tabela consulta o codigo do gestor que alterou o status e conferir se ele existe e é o mesmo que diz  
         mycursor.execute("UPDATE tbl_Consulta SET sg_Disponibilidade = 'A' ")
         conexao.commit()
         print(mycursor.rowcount)
