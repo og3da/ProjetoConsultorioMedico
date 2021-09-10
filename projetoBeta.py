@@ -116,7 +116,7 @@ def continuarOUsairMedico():
 def programaMedico():
     limparTela()
     print('--- BEM VINDO(a)!!! ---')
-    escolha=int(input("Digite 1 para exibir as consultas marcadas em seu nome ou 2 para marcar uma agenda: "))
+    escolha=int(input("Digite 1 para exibir as consultas marcadas em seu nome; 2 para marcar uma agenda; 3 para apagar uma agenda: "))
     if escolha==1:
         print('--- CONSULTAS MARCADAS ---')
         mycursor.execute("select * FROM tbl_Consulta WHERE sg_Disponibilidade = 'A'") #exibindo as consultas confirmadas
@@ -140,10 +140,32 @@ def programaMedico():
             mycursor.execute(sql, val)
             conexao.commit()
             print("Agenda cadastrada com sucesso!")
+            continuarOUsairMedico()
         else:
             print("Agenda não foi marcada")
             continuarOUsairMedico()
-            
+    
+    elif escolha ==3:
+        print('--- CONSULTAS MARCADAS ---')
+        mycursor.execute("select * FROM tbl_Consulta WHERE sg_Disponibilidade = 'A'") #exibindo as consultas confirmadas
+        myresult = mycursor.fetchall()
+
+        for x in myresult:
+            print(x)
+        
+        print('')
+        apagar=(input("Digite o codigo da consulta a apagar: "))
+        confirmar=int(input("Se deseja confirmar digite 1 senão digite 2: "))
+        if confirmar==1:
+            sql = ("DELETE FROM tbl_agendaMedico WHERE cd_Agenda='%s'")
+            val = (apagar) 
+            mycursor.execute(sql, val)
+            print("Agenda apagada com sucesso!")
+            continuarOUsairMedico()
+        else:
+            print("Agenda não foi apagada")
+            continuarOUsairMedico()
+
     else:
         print("Digite uma opção válida!!!")
         programaMedico()
