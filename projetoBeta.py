@@ -126,6 +126,7 @@ def programaMedico():
     limparTela()
     print('--- BEM VINDO(a)!!! ---')
     escolha=int(input("Digite 1 para exibir as consultas marcadas em seu nome; 2 para marcar uma agenda; 3 para apagar uma agenda: "))
+
     if escolha==1: #visualizar consultas marcadas em seu nome
         print('--- CONSULTAS MARCADAS ---')
         mycursor.execute("select * FROM tbl_Consulta WHERE sg_Disponibilidade = 'A'") #exibindo as consultas confirmadas
@@ -255,7 +256,7 @@ def loginMedico():
 
     if verificacao:
         #entender como posso guardar o codigo do usuario com um select 
-        cod = ("select cd_Medico FROM tbl_Medico WHERE nm_Usuario = '%s'" % (x)) #inserindo cod do medico na variavel
+        cod = mycursor.execute("select cd_Medico FROM tbl_Medico WHERE nm_Usuario = '%s'" % (x)) #inserindo cod do medico na variavel
         print("codigo do medico: ",cod)
         print('Bem vindo(a)!')
         programaMedico()
