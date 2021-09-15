@@ -172,7 +172,7 @@ def programaMedico():
     #pensar em como posso exibir a agenda completa do medico sem mostrar a de outros
     #pensar em como posso inserir o codigo do medico automaticamente
     #exibir codigo de usuario para o medico
-
+    #
 def programaPaciente():
     limparTela()
     print("--- AGENDA DE MÉDICOS DISPONÍVEIS ---")
