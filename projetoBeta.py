@@ -286,7 +286,7 @@ def loginMedico():
 
     if verificacao:
         #entender como posso guardar o codigo do usuario com um select 
-        cod = ("select cd_Medico FROM tbl_Medico WHERE nm_Usuario = '%s'" % (x)) #inserindo cod do medico na variavel
+        cod = mycursor.execute("select cd_Medico FROM tbl_Medico WHERE nm_Usuario = '%s'" % (x)) #inserindo cod do medico na variavel
         print("codigo do medico: ",cod)
         print('Bem vindo(a)!')
         programaMedico()
