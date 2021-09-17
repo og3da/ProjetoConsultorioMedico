@@ -121,12 +121,18 @@ def continuarOUsairPaciente():
     else:
             print("Sessão encerrada!")
 
+def continuarOUsairGestor():
+    sair=int(input("Digite 1 para continuar a sessão ou 2 para encerrar: "))
+    if sair==1:
+            programaGestor()
+    else:
+            print("Sessão encerrada!")
+
 # PROGRAMAS DE CADA USUARIO
 def programaMedico():
     limparTela()
     print('--- BEM VINDO(a)!!! ---')
     escolha=int(input("Digite 1 para exibir as consultas marcadas em seu nome; 2 para marcar uma agenda; 3 para apagar uma agenda: "))
-
     if escolha==1: #visualizar consultas marcadas em seu nome
         print('--- CONSULTAS MARCADAS ---')
         mycursor.execute("select * FROM tbl_Consulta WHERE sg_Disponibilidade = 'A'") #exibindo as consultas confirmadas
@@ -191,7 +197,7 @@ def programaPaciente():
     for x in myresult:
         print(x)
 
-    entrar=int(input("Digite 1 para solicitar uma consulta ou 2 para encerrar"))
+    entrar=int(input("Digite 1 para solicitar uma consulta ou 2 para encerrar: "))
     if entrar==1:
         print("")
         medico = str(input("digite o nome do medico que deseja marcar consulta: "))
@@ -211,28 +217,52 @@ def programaPaciente():
 
 def programaGestor():
     limparTela()
+    print("--- BEM VINDO(a)!!! ---")
+    print("-- AGENDA DOS MÉDICOS --")
     mycursor.execute("select * from vw_mostrarAgendaMedico") #exibindo a agenda dos medicos
     myresult = mycursor.fetchall()
 
     for x in myresult:
         print(x)
 
+    print("")
+    print("-- CONSULTAS SOLICITADAS -- ")
     mycursor1.execute("select * from vw_mostrarSolicitacoesConsulta") #exibindo consultas solicitadas
     myresult1 = mycursor1.fetchall()
 
     for x in myresult1:
         print(x)
 
-    #gestor deverá escolher o código da consulta a se mudar o status para ATIVO
-    alterarStatus = int(input("Digite 1 para Confirmar a consulta ou 2 para manter Inativa: "))
+    #gestor deverá escolher o código da consulta a se alterar o status
+    print("")
+    cod=int(input("Digite o codigo da consulta a alterar o status: "))
+    alterarStatus=int(input("Digite 1 para confirmar a consulta; 2 para desmarcar a consulta; 3 para manter inativa: "))
     if alterarStatus == 1:
         #solicitar codigo do gestor
         # sql=("INSERT INTO tbl_Consulta(cd_Gestor) SELECT cd_Gestor FROM tbl_Gestor WHERE cd_Gestor='%s' ") 
         # acima devo inserir na tabela consulta o codigo do gestor que alterou o status e conferir se ele existe e é o mesmo que diz  
-        mycursor.execute("UPDATE tbl_Consulta SET sg_Disponibilidade = 'A' ")
-        conexao.commit()
-        print(mycursor.rowcount)
-        print("Consulta marcada com sucesso!") 
+        confirmar=int(input("Digite 1 para confirmar a escolha ou 2 para cancelar: "))
+        if confirmar==1:
+            mycursor.execute("UPDATE tbl_Consulta SET sg_Disponibilidade = 'A' WHERE cd_Consulta='%s' " % (cod))
+            conexao.commit()
+            print("Consulta marcada com sucesso!") 
+        else:
+            print("Nenhuma alteração foi feita")
+        continuarOUsairGestor()
+
+    elif alterarStatus == 2:
+        confirmar=int(input("Digite 1 para confirmar a escolha ou 2 para cancelar: "))
+        if confirmar==1:
+            mycursor.execute("UPDATE tbl_Consulta SET sg_Disponibilidade = 'I' WHERE cd_Consulta='%s' " % (cod))
+            conexao.commit()
+            print("Consulta desmarcada com sucesso!") 
+        else:
+            print("Nenhuma alteração foi feita")
+        continuarOUsairGestor()
+
+    else:
+        print("Consulta não teve seu status alterado")
+        continuarOUsairGestor()
 
 # Login de cada usuário
 def loginPaciente():
