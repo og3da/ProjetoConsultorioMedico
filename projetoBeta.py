@@ -1,14 +1,16 @@
 #conectando ao MySql 
 import mysql.connector 
-import os #modulo para limpar tela
+import os
+
+from mysql.connector.utils import read_int #modulo para limpar tela
 from conector import Banco #importando arquivo externo para pegar informações do banco
 import getpass #modulo para esconder a senha no prompt (a senha nao aparecerá)
 conexao = mysql.connector.connect(host=Banco.dados['host'],database=Banco.dados['database'],user=Banco.dados['user'],password=Banco.dados['password'])
 if conexao.is_connected(): #verificando se conexao foi realizada, se sim:
         db_info = conexao.get_server_info() #busca versao do server
         print("Conexão realizada com sucesso! Servidor versão: ",db_info)
-        mycursor = conexao.cursor() #criando variavel "mycursor" para executar comandos sql
-        mycursor1 = conexao.cursor() #criando variavel "mycursor1" para executar comandos sql
+        mycursor = conexao.cursor(buffered=True) #criando variavel "mycursor" para executar comandos sql
+        mycursor1 = conexao.cursor(buffered=True) #criando variavel "mycursor1" para executar comandos sql
 else:
     print("Problemas em conectar")
 
@@ -93,7 +95,7 @@ def cadastrar():
         print('escolha uma opção válida!')
         cadastrar()
 
-# continuar cadastrando ou sair
+# continuar ou sair
 def continuarOUsair():
     arm2=int(input("Digite 1 para continuar cadastrando ou 2 para sair: "))
     if arm2== 1:
@@ -105,30 +107,89 @@ def continuarOUsair():
         print('Escolha a opção 1 ou 2!!!')
         continuarOUsair()
 
+def continuarOUsairMedico():
+    sair=int(input("Digite 1 para continuar a sessão ou 2 para encerrar: "))
+    if sair==1:
+            programaMedico()
+    else:
+            print("Sessão encerrada!")
+
+def continuarOUsairPaciente():
+    sair=int(input("Digite 1 para continuar a sessão ou 2 para encerrar: "))
+    if sair==1:
+            programaPaciente()
+    else:
+            print("Sessão encerrada!")
+
+def continuarOUsairGestor():
+    sair=int(input("Digite 1 para continuar a sessão ou 2 para encerrar: "))
+    if sair==1:
+            programaGestor()
+    else:
+            print("Sessão encerrada!")
+
 # PROGRAMAS DE CADA USUARIO
 def programaMedico():
-    mycursor.execute("select * FROM tbl_Consulta WHERE sg_Disponibilidade = 'A' ") #exibindo as consultas confirmadas
-    myresult = mycursor.fetchall()
+    limparTela()
+    print('--- BEM VINDO(a)!!! ---')
+    escolha=int(input("Digite 1 para exibir as consultas marcadas em seu nome; 2 para marcar uma agenda; 3 para apagar uma agenda: "))
+    if escolha==1: #visualizar consultas marcadas em seu nome
+        print('--- CONSULTAS MARCADAS ---')
+        mycursor.execute("select * FROM tbl_Consulta WHERE sg_Disponibilidade = 'A'") #exibindo as consultas confirmadas
+        myresult = mycursor.fetchall()
 
-    for x in myresult:
-        print(x)
+        for x in myresult:
+            print(x)
+        
+        continuarOUsairMedico()
     
-    codMedico = int(input("Digite seu codigo de usuário: "))
-    dataDisponivel = str(input("Digite uma data para disponibilizar horários: "))
-    horaEntrada = str(input("Digite seu horário de entrada para este dia: "))
-    horaSaida = str(input("Digite seu horário de saída para este dia: "))
+    elif escolha==2: #marcar uma agenda
+        codMedico = int(input("Digite seu codigo de usuário: "))
+        dataDisponivel = str(input("Digite uma data para disponibilizar horários: "))
+        horaEntrada = str(input("Digite seu horário de entrada para este dia: "))
+        horaSaida = str(input("Digite seu horário de saída para este dia: "))
 
+        confirmar=int(input("Se deseja confirmar a agenda digite 1 senão digite 2: "))
+        if confirmar==1:
+            sql = ("INSERT INTO tbl_agendaMedico(cd_Medico, ds_Data, hr_Entrada, hr_Saida) VALUES (%s,%s,%s,%s)")
+            val = (codMedico, dataDisponivel, horaEntrada, horaSaida) 
+            mycursor.execute(sql, val)
+            conexao.commit()
+            print("Agenda cadastrada com sucesso!")
+            continuarOUsairMedico()
+        else:
+            print("Agenda não foi marcada")
+            continuarOUsairMedico()
+    
+    elif escolha ==3: #desmarcar uma agenda
+        print('--- AGENDA MEDICO ---')
+        mycursor.execute("select * FROM tbl_agendaMedico") #exibir a agenda com WHERE cd_Medico = ao codigo do medico de login atual
+        myresult = mycursor.fetchall()
 
-    sql = ("INSERT INTO tbl_agendaMedico(cd_Medico, ds_Data, hr_Entrada, hr_Saida) VALUES (%s,%s,%s,%s)")
-    val = (codMedico, dataDisponivel, horaEntrada, horaSaida) 
-    mycursor.execute(sql, val)
-    conexao.commit()
-    print("Agenda cadastrada com sucesso!")
+        for x in myresult:
+            print(x)
+        
+        print('')
+        apagar=input("Digite a data da consulta a apagar: ")
+        confirmar=int(input("Se deseja confirmar digite 1 senão digite 2: "))
+        if confirmar==1:
+            mycursor.execute("DELETE FROM tbl_agendaMedico WHERE ds_Data='%s'" % (apagar)) #futuramente fazer WHERE ds_Data='%s' AND cd_Medico='%s'
+            conexao.commit()
+            print("Agenda apagada com sucesso!")
+            continuarOUsairMedico()
+        else:
+            print("Agenda não foi apagada")
+            continuarOUsairMedico()
+
+    else:
+        print("Digite uma opção válida!!!")
+        programaMedico()
     #pensar em como posso exibir a agenda completa do medico sem mostrar a de outros
     #pensar em como posso inserir o codigo do medico automaticamente
     #exibir codigo de usuario para o medico
 
 def programaPaciente():
+    limparTela()
     print("--- AGENDA DE MÉDICOS DISPONÍVEIS ---")
     mycursor.execute("select * from vw_mostrarAgendaMedico") #exibindo a agenda dos medicos
     myresult = mycursor.fetchall()
@@ -136,42 +197,72 @@ def programaPaciente():
     for x in myresult:
         print(x)
 
-    print("")
-    medico = str(input("digite o nome do medico que deseja marcar consulta: "))
-    especialidade = str(input("digite a especialidade do medico: "))
-    data = str(input("digite a data desejada para consulta: "))
-    hora = str(input("digite a hora desejada para consulta (*a consulta terá tempo máximo de 50min): "))
+    entrar=int(input("Digite 1 para solicitar uma consulta ou 2 para encerrar: "))
+    if entrar==1:
+        print("")
+        medico = str(input("digite o nome do medico que deseja marcar consulta: "))
+        especialidade = str(input("digite a especialidade do medico: "))
+        data = str(input("digite a data desejada para consulta: "))
+        hora = str(input("digite a hora desejada para consulta (*a consulta terá tempo máximo de 50min): "))
 
-
-    sql = ("INSERT INTO tbl_Consulta(nm_Medico,ds_Especialidade,ds_Data,hr_Consulta) VALUES (%s,%s,%s,%s)") #inserindo credenciais no banco de dados
-    val = (medico,especialidade,data,hora)
-    mycursor.execute(sql, val)
-    conexao.commit()
-    print("Solicitação de consulta concluída!")
+        sql = ("INSERT INTO tbl_Consulta(nm_Medico,ds_Especialidade,ds_Data,hr_Consulta) VALUES (%s,%s,%s,%s)") #inserindo credenciais no banco de dados
+        val = (medico,especialidade,data,hora)
+        mycursor.execute(sql, val)
+        conexao.commit()
+        print("Solicitação de consulta concluída!")
+        continuarOUsairPaciente()
+        # ver como posso inserir codigo do paciente que solicitou automaticamente na tabela
+    else:
+        print("Programa encerrado!")
 
 def programaGestor():
+    limparTela()
+    print("--- BEM VINDO(a)!!! ---")
+    print("-- AGENDA DOS MÉDICOS --")
     mycursor.execute("select * from vw_mostrarAgendaMedico") #exibindo a agenda dos medicos
     myresult = mycursor.fetchall()
 
     for x in myresult:
         print(x)
 
+    print("")
+    print("-- CONSULTAS SOLICITADAS -- ")
     mycursor1.execute("select * from vw_mostrarSolicitacoesConsulta") #exibindo consultas solicitadas
     myresult1 = mycursor1.fetchall()
 
     for x in myresult1:
         print(x)
 
-    #gestor deverá escolher o código da consulta a se mudar o status para ATIVO
-    alterarStatus = int(input("Digite 1 para Confirmar a consulta ou 2 para manter Inativa: "))
+    #gestor deverá escolher o código da consulta a se alterar o status
+    print("")
+    cod=int(input("Digite o codigo da consulta a alterar o status: "))
+    alterarStatus=int(input("Digite 1 para confirmar a consulta; 2 para desmarcar a consulta; 3 para manter inativa: "))
     if alterarStatus == 1:
         #solicitar codigo do gestor
         # sql=("INSERT INTO tbl_Consulta(cd_Gestor) SELECT cd_Gestor FROM tbl_Gestor WHERE cd_Gestor='%s' ") 
         # acima devo inserir na tabela consulta o codigo do gestor que alterou o status e conferir se ele existe e é o mesmo que diz  
-        mycursor.execute("UPDATE tbl_Consulta SET sg_Disponibilidade = 'A' ")
-        conexao.commit()
-        print(mycursor.rowcount)
-        print("Consulta marcada com sucesso!") 
+        confirmar=int(input("Digite 1 para confirmar a escolha ou 2 para cancelar: "))
+        if confirmar==1:
+            mycursor.execute("UPDATE tbl_Consulta SET sg_Disponibilidade = 'A' WHERE cd_Consulta='%s' " % (cod))
+            conexao.commit()
+            print("Consulta marcada com sucesso!") 
+        else:
+            print("Nenhuma alteração foi feita")
+        continuarOUsairGestor()
+
+    elif alterarStatus == 2:
+        confirmar=int(input("Digite 1 para confirmar a escolha ou 2 para cancelar: "))
+        if confirmar==1:
+            mycursor.execute("UPDATE tbl_Consulta SET sg_Disponibilidade = 'I' WHERE cd_Consulta='%s' " % (cod))
+            conexao.commit()
+            print("Consulta desmarcada com sucesso!") 
+        else:
+            print("Nenhuma alteração foi feita")
+        continuarOUsairGestor()
+
+    else:
+        print("Consulta não teve seu status alterado")
+        continuarOUsairGestor()
 
 # Login de cada usuário
 def loginPaciente():
@@ -194,6 +285,9 @@ def loginMedico():
     verificacao = mycursor.fetchall()
 
     if verificacao:
+        #entender como posso guardar o codigo do usuario com um select 
+        cod = ("select cd_Medico FROM tbl_Medico WHERE nm_Usuario = '%s'" % (x)) #inserindo cod do medico na variavel
+        print("codigo do medico: ",cod)
         print('Bem vindo(a)!')
         programaMedico()
     else:
